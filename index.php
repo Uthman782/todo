@@ -108,7 +108,7 @@ $allTasks = getTasks();
     </div>
 
     <footer>
-        <p>Inspired By <a href="https://chromewebstore.google.com/detail/docket/kkkciickjhdffaionllgnndmecaenpej" target="_blank">"Uthman Khan"</a></p>
+        <p>Inspired By <a href="https://github.com/Uthman782" target="_blank">"Uthman Khan"</a></p>
     </footer>
 
     <script src='https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.js'></script>
