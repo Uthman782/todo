@@ -22,11 +22,17 @@ drake.on('drop', function(el, target, source) {
 // Load all tasks from the server
 async function loadTasks() {
     try {
+        console.log('Loading tasks...');
         const response = await fetch('api/tasks.php');
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
+        
         const tasks = await response.json();
+        console.log('Loaded tasks:', tasks);
         
         // Clear all lists
         document.querySelectorAll('.task-list').forEach(list => list.innerHTML = '');
@@ -67,6 +73,7 @@ function escapeHtml(unsafe) {
 
 // Show error message
 function showError(message) {
+    console.error('Error:', message);
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = message;
@@ -81,6 +88,7 @@ async function addTask() {
     if (!inputTask) return;
 
     try {
+        console.log('Adding task:', inputTask);
         const response = await fetch('api/tasks.php', {
             method: 'POST',
             headers: {
@@ -91,13 +99,25 @@ async function addTask() {
                 status: 'todo'
             })
         });
+        console.log('Add task response status:', response.status);
+
+        const data = await response.json();
+        console.log('Add task response:', data);
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(data.error || 'Failed to add task');
+        }
+
+        // Add the new task to the todo list immediately
+        if (data.task) {
+            const taskElement = createTaskElement(data.task);
+            const todoList = document.getElementById('to-do');
+            if (todoList) {
+                todoList.insertBefore(taskElement, todoList.firstChild);
+            }
         }
 
         input.value = "";
-        await loadTasks(); // Reload all tasks
     } catch (error) {
         console.error('Error adding task:', error);
         showError('Failed to add task. Please try again.');
@@ -106,9 +126,13 @@ async function addTask() {
 
 // Update task status
 async function updateTaskStatus(taskId, newStatus) {
-    if (!taskId || !newStatus) return;
+    if (!taskId || !newStatus) {
+        console.error('Invalid taskId or newStatus:', { taskId, newStatus });
+        return;
+    }
 
     try {
+        console.log('Updating task:', { taskId, newStatus });
         const response = await fetch('api/tasks.php', {
             method: 'PUT',
             headers: {
@@ -119,9 +143,13 @@ async function updateTaskStatus(taskId, newStatus) {
                 status: newStatus
             })
         });
+        console.log('Update task response status:', response.status);
+
+        const data = await response.json();
+        console.log('Update task response:', data);
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(data.error || 'Failed to update task');
         }
     } catch (error) {
         console.error('Error updating task:', error);
@@ -133,15 +161,20 @@ async function updateTaskStatus(taskId, newStatus) {
 // Empty trash
 async function emptyTrash() {
     try {
+        console.log('Emptying trash...');
         const response = await fetch('api/tasks.php', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
             }
         });
+        console.log('Empty trash response status:', response.status);
+
+        const data = await response.json();
+        console.log('Empty trash response:', data);
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(data.error || 'Failed to empty trash');
         }
 
         document.getElementById("trash").innerHTML = "";
